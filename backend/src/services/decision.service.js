@@ -125,6 +125,37 @@ class DecisionService {
         throw new Error("Failed to update progress");
       }
 
+      // When fetching a step
+      const { data: step, error } = await supabase
+        .from('steps')
+        .select('*')
+        .eq('id', stepId)
+        .single();
+
+      // Check if it's the final step
+      if (step.is_final) {
+        // Automatically mark progress as completed
+        await supabase
+          .from('progress')
+          .update({ 
+            completed: true, 
+            current_step_id: step.id 
+          })
+          .eq('id', progressId);
+      }
+
+      // After updating progress with the decision, check if this was the final step
+      if (!nextStep || (nextStep.options && nextStep.options.length === 0)) {
+        // Mark as completed
+        await supabase
+          .from('progress')
+          .update({ 
+            completed: true,
+            current_step_id: currentStepId
+          })
+          .eq('id', progressRecord.id);
+      }
+
       return {
         success: true,
         decisionType: evaluation.type,
