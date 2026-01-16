@@ -45,12 +45,12 @@ export const api = {
     return res.json()
   },
 
-  submitAnswer: async (scenarioId, stepId, chosenOptionIndex) => {
+  submitAnswer: async (scenarioId, stepId, optionId) => {
     const headers = await getAuthHeaders()
     const res = await fetch(`${API_BASE}/scenarios/${scenarioId}/step/${stepId}/answer`, {
       method: 'POST',
       headers,
-      body: JSON.stringify({ chosenOptionIndex })
+      body: JSON.stringify({ optionId })
     })
     if (!res.ok) throw new Error('Failed to submit answer')
     return res.json()

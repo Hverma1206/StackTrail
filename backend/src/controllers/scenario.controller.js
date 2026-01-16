@@ -1,5 +1,5 @@
 import supabase from "../config/supabase.js";
-import decisionService from "../services/decision.service.js";
+import decisionTreeService from "../services/decision-tree.service.js";
 
 
 export const getAllScenarios = async (req, res) => {
@@ -86,14 +86,14 @@ export const getScenarioById = async (req, res) => {
 
 /**
  * GET /api/scenarios/:id/start
- * Start a scenario - creates/resets progress and returns first step
+ * Start a scenario - creates/resets progress and returns root step
  */
 export const startScenario = async (req, res) => {
   try {
     const userId = req.user.id;
     const { id: scenarioId } = req.params;
 
-    const result = await decisionService.startScenario(userId, scenarioId);
+    const result = await decisionTreeService.startScenario(userId, scenarioId);
 
     res.json({
       success: true,
@@ -118,7 +118,7 @@ export const getStep = async (req, res) => {
     const userId = req.user.id;
     const { id: scenarioId, stepId } = req.params;
 
-    const result = await decisionService.getStep(userId, scenarioId, stepId);
+    const result = await decisionTreeService.getStep(userId, scenarioId, stepId);
 
     res.json({
       success: true,
@@ -143,27 +143,20 @@ export const submitAnswer = async (req, res) => {
   try {
     const userId = req.user.id;
     const { id: scenarioId, stepId } = req.params;
-    const { chosenOptionIndex } = req.body;
+    const { optionId } = req.body;
 
-    if (chosenOptionIndex === undefined || typeof chosenOptionIndex !== "number") {
+    if (!optionId || typeof optionId !== "string") {
       return res.status(400).json({
         success: false,
-        message: "chosenOptionIndex is required and must be a number",
+        message: "optionId is required and must be a string",
       });
     }
 
-    if (chosenOptionIndex < 0) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid option index",
-      });
-    }
-
-    const result = await decisionService.processAnswer(
+    const result = await decisionTreeService.submitAnswer(
       userId,
       scenarioId,
       stepId,
-      chosenOptionIndex
+      optionId
     );
 
     res.json({
