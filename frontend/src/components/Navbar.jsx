@@ -15,7 +15,7 @@ const Navbar = () => {
   return (
     <nav className="fixed top-0 w-full z-50 border-b border-white/5 bg-black/80 backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+        <Link to={user ? "/scenarios" : "/"} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
           <div className="w-8 h-8 bg-green-500/10 border border-green-500/30 flex items-center justify-center rounded">
             <i className="fa-solid fa-brain text-green-500 text-sm"></i>
           </div>

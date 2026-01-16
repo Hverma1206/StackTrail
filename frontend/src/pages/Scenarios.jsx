@@ -103,7 +103,7 @@ const Scenarios = () => {
         >
           <option value="">All Job Roles</option>
           {JOB_ROLES.map(role => (
-            <option key={role} value={role}>👔 {role}</option>
+            <option key={role} value={role}>{role}</option>
           ))}
         </select>
         <select
@@ -112,9 +112,9 @@ const Scenarios = () => {
           className="bg-zinc-900/50 border border-white/10 text-white p-3 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500/50 outline-none transition-all font-mono text-sm"
         >
           <option value="">All Difficulties</option>
-          <option value="easy">🟢 Easy</option>
-          <option value="medium">🟡 Medium</option>
-          <option value="hard">🔴 Hard</option>
+          <option value="easy">Easy</option>
+          <option value="medium">Medium</option>
+          <option value="hard">Hard</option>
         </select>
         <input
           type="text"
