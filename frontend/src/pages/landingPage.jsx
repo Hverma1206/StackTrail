@@ -1,14 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 
-// REMOVED: lucide-react imports
-// We will use Font Awesome classes instead
-
-/**
- * UTILITIES & HOOKS
- */
-
-// Hook to load external scripts (Three.js & GSAP)
 const useExternalScripts = (scripts) => {
   const [loaded, setLoaded] = useState(false);
 
@@ -121,7 +113,7 @@ const ThreeBackground = ({ loaded }) => {
     let mouseX = 0;
     let mouseY = 0;
     let targetX = 0;
-    let targetY = 0;
+    let targetY = 0; 
 
     const windowHalfX = window.innerWidth / 2;
     const windowHalfY = window.innerHeight / 2;

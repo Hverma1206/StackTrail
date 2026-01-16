@@ -18,7 +18,7 @@ const Login = () => {
 
     try {
       await signIn(email, password)
-      navigate('/scenarios')
+      navigate('/home')
     } catch (err) {
       setError(err.message)
     } finally {

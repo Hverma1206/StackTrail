@@ -21,7 +21,7 @@ const Signup = () => {
       await signUp(email, password, fullName)
       // After signup, sign in the user
       await signIn(email, password)
-      navigate('/scenarios')
+      navigate('/home')
     } catch (err) {
       setError(err.message)
     } finally {
