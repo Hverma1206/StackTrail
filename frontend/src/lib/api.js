@@ -56,6 +56,16 @@ export const api = {
     return res.json()
   },
 
+  generateAnalysis: async (scenarioId) => {
+    const headers = await getAuthHeaders()
+    const res = await fetch(`${API_BASE}/scenarios/${scenarioId}/analyze`, {
+      method: 'POST',
+      headers
+    })
+    if (!res.ok) throw new Error('Failed to generate analysis')
+    return res.json()
+  },
+
   // Progress
   getProgress: async (scenarioId) => {
     const headers = await getAuthHeaders()

@@ -10,6 +10,7 @@ import Scenarios from './pages/Scenarios.jsx'
 import ScenarioDetails from './pages/ScenarioDetails.jsx'
 import PlayScenario from './pages/PlayScenario.jsx'
 import Progress from './pages/Progress.jsx'
+import Analysis from './pages/Analysis.jsx'
 
 function App() {
   return (
@@ -72,6 +73,14 @@ function App() {
                 <Navbar />
                 <Progress />
               </>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/analysis/:id"
+          element={
+            <ProtectedRoute>
+              <Analysis />
             </ProtectedRoute>
           }
         />
