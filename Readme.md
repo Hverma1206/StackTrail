@@ -169,22 +169,4 @@ It complements algorithm platforms instead of replacing them.
 
 ---
 
-## 🎯 Final Thought
-
-> Algorithms test how fast you can think.  
-> StackTrail trains **how well you decide**.
-
-That’s the difference between passing an interview  
-and surviving your first production outage.
-
----
-
-## 📌 Status
-- Story Mode (V1): Complete
-- Lab Mode (V2): Simulated isolated machine
-- AI Mentor: Integrated
-- Real-world focus: Core philosophy
-
----
-
 **Built for real engineers, real incidents, and real learning.**
