@@ -24,7 +24,7 @@ const Dashboard = () => {
             Welcome {getUsername()}<span className="text-green-500">,</span>
           </h1>
           <p className="text-zinc-400 text-lg">
-            Access the BrainWave platform and develop yourself as a decision-making professional.
+            Access the StackTrail platform and develop yourself as a decision-making professional.
           </p>
         </div>
 
@@ -33,7 +33,7 @@ const Dashboard = () => {
           <CardSpotlight className="hover:border-green-500/40 transition-all cursor-pointer" onClick={() => navigate('/learning')}>
             <div className="relative z-10">
               <div className="mb-4">
-                <span className="text-green-400 font-mono text-sm font-medium">BrainWave Academy</span>
+                <span className="text-green-400 font-mono text-sm font-medium">StackTrail Academy</span>
               </div>
               <h2 className="text-3xl font-bold text-white mb-4 font-mono">
                 Learn and get<br />certified
@@ -53,7 +53,7 @@ const Dashboard = () => {
           <CardSpotlight className="hover:border-green-500/40 transition-all cursor-pointer" onClick={() => navigate('/scenarios')}>
             <div className="relative z-10">
               <div className="mb-4">
-                <span className="text-green-400 font-mono text-sm font-medium">BrainWave Labs</span>
+                <span className="text-green-400 font-mono text-sm font-medium">StackTrail Labs</span>
               </div>
               <h2 className="text-3xl font-bold text-white mb-4 font-mono">
                 Practice with hands-on Labs
@@ -74,7 +74,7 @@ const Dashboard = () => {
         {/* <div className="space-y-4">
           <div className="bg-zinc-900/50 border border-white/10 p-6 rounded-lg hover:border-white/20 transition-all flex items-center justify-between group cursor-pointer">
             <div>
-              <h3 className="text-white font-mono font-bold text-lg mb-1">BrainWave Defense</h3>
+              <h3 className="text-white font-mono font-bold text-lg mb-1">StackTrail Defense</h3>
               <p className="text-zinc-400 text-sm">Level up your defensive decision-making skills</p>
             </div>
             <div className="text-zinc-600 group-hover:text-white transition-colors">
@@ -86,7 +86,7 @@ const Dashboard = () => {
 
           <div className="bg-zinc-900/50 border border-white/10 p-6 rounded-lg hover:border-white/20 transition-all flex items-center justify-between group cursor-pointer">
             <div>
-              <h3 className="text-white font-mono font-bold text-lg mb-1">BrainWave Challenges</h3>
+              <h3 className="text-white font-mono font-bold text-lg mb-1">StackTrail Challenges</h3>
               <p className="text-zinc-400 text-sm">Compete or host decision-making competitions</p>
             </div>
             <div className="text-zinc-600 group-hover:text-white transition-colors">

@@ -19,7 +19,7 @@ const Navbar = () => {
           <div className="w-8 h-8 bg-green-500/10 border border-green-500/30 flex items-center justify-center rounded">
             <i className="fa-solid fa-brain text-green-500 text-sm"></i>
           </div>
-          <span className="font-mono font-bold text-lg tracking-tight text-white">BrainWave<span className="text-green-500">_</span></span>
+          <span className="font-mono font-bold text-lg tracking-tight text-white">StackTrail<span className="text-green-500">_</span></span>
         </Link>
         {user && (
           <div className="flex items-center gap-4">

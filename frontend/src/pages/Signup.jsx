@@ -37,7 +37,7 @@ const Signup = () => {
             <i className="fa-solid fa-brain text-green-500 text-2xl"></i>
           </div> */}
           <h1 className="text-3xl font-bold font-mono text-white mb-2">
-            Join BrainWave<span className="text-green-500">_</span>
+            Join StackTrail<span className="text-green-500">_</span>
           </h1>
           <p className="text-zinc-500 text-sm font-mono">
             Start your journey
