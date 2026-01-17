@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import apiClient from '../lib/api'
 
 const ScenarioAnalysis = ({ scenarioId, onRetry, metadata }) => {
   const navigate = useNavigate()
@@ -14,33 +15,18 @@ const ScenarioAnalysis = ({ scenarioId, onRetry, metadata }) => {
         setLoading(true)
         
         console.log('📡 Making API request to:', `${import.meta.env.VITE_API_URL}/scenarios/${scenarioId}/analyze`)
-        const response = await fetch(
-          `${import.meta.env.VITE_API_URL}/scenarios/${scenarioId}/analyze`,
-          {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${(await import('../lib/supabase.js').then(m => m.supabase.auth.getSession())).data.session?.access_token}`,
-              'Content-Type': 'application/json',
-            },
-          }
-        )
+        const response = await apiClient.post(`/scenarios/${scenarioId}/analyze`)
 
         console.log('📥 Response status:', response.status, response.statusText)
 
-        if (!response.ok) {
-          const errorText = await response.text()
-          console.error('❌ API Error response:', errorText)
-          throw new Error('Failed to generate analysis')
-        }
-
-        const data = await response.json()
+        const data = response.data
         console.log('✅ Analysis data received:', data)
         setAnalysis(data.analysis)
         console.log('💾 Analysis saved to state')
       } catch (err) {
         console.error('❌ Error fetching analysis:', err)
         console.error('Error details:', err.message, err.stack)
-        setError(err.message)
+        setError(err.response?.data?.error || err.message)
       } finally {
         console.log('🏁 Fetch analysis complete, setting loading to false')
         setLoading(false)

@@ -126,7 +126,8 @@ This mirrors **how engineers actually work**.
 ### Backend
 - Node.js
 - Express.js
-- Supabase (PostgreSQL + Auth)
+- MongoDB (Mongoose)
+- JWT Authentication
 
 ### AI
 - Gemini API
