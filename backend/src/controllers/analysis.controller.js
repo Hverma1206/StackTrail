@@ -1,5 +1,7 @@
-import supabase from "../config/supabase.js";
 import geminiService from "../services/gemini.service.js";
+import Progress from "../models/Progress.js";
+import Scenario from "../models/Scenario.js";
+import Step from "../models/Step.js";
 
 /**
  * Generate AI-powered post-scenario analysis
@@ -12,14 +14,12 @@ export const generateAnalysis = async (req, res) => {
     const { scenarioId } = req.params;
 
     // Fetch user's progress for this scenario
-    const { data: progress, error: progressError } = await supabase
-      .from("progress")
-      .select("*")
-      .eq("user_id", userId)
-      .eq("scenario_id", scenarioId)
-      .single();
+    const progress = await Progress.findOne({
+      user_id: userId,
+      scenario_id: scenarioId,
+    });
 
-    if (progressError || !progress) {
+    if (!progress) {
       return res.status(404).json({
         success: false,
         message: "Progress not found for this scenario",
@@ -35,13 +35,9 @@ export const generateAnalysis = async (req, res) => {
     }
 
     // Fetch scenario details
-    const { data: scenario, error: scenarioError } = await supabase
-      .from("scenarios")
-      .select("*")
-      .eq("id", scenarioId)
-      .single();
+    const scenario = await Scenario.findById(scenarioId);
 
-    if (scenarioError || !scenario) {
+    if (!scenario) {
       return res.status(404).json({
         success: false,
         message: "Scenario not found",
@@ -55,11 +51,7 @@ export const generateAnalysis = async (req, res) => {
       for (const decision of progress.decisions) {
         try {
           // Fetch the step to get context
-          const { data: step } = await supabase
-            .from("steps")
-            .select("context, options")
-            .eq("id", decision.stepId)
-            .single();
+          const step = await Step.findById(decision.stepId);
 
           if (step) {
             // Find the chosen option
@@ -85,7 +77,7 @@ export const generateAnalysis = async (req, res) => {
 
     // Create enriched progress object for analysis
     const enrichedProgress = {
-      ...progress,
+      ...progress.toObject(),
       decisions: enrichedDecisions
     };
 

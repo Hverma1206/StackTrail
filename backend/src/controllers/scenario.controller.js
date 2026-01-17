@@ -1,43 +1,43 @@
-import supabase from "../config/supabase.js";
 import decisionTreeService from "../services/decision-tree.service.js";
+import Scenario from "../models/Scenario.js";
 
 
 export const getAllScenarios = async (req, res) => {
   try {
     const { difficulty, role, search } = req.query;
 
-    let query = supabase
-      .from("scenarios")
-      .select("id, title, role, difficulty, description, created_at")
-      .order("created_at", { ascending: false });
+    let query = {};
 
     if (difficulty) {
-      query = query.eq("difficulty", difficulty);
+      query.difficulty = difficulty;
     }
 
     if (role) {
-      query = query.eq("role", role);
+      query.role = role;
     }
 
     if (search) {
-      query = query.or(`title.ilike.%${search}%,description.ilike.%${search}%`);
+      query.$or = [
+        { title: { $regex: search, $options: "i" } },
+        { description: { $regex: search, $options: "i" } },
+      ];
     }
 
-    const { data, error } = await query;
-
-    if (error) {
-      console.error("Error fetching scenarios:", error);
-      return res.status(500).json({
-        success: false,
-        message: "Failed to fetch scenarios",
-        error: error.message,
-      });
-    }
+    const scenarios = await Scenario.find(query)
+      .select("_id title role difficulty description createdAt")
+      .sort({ createdAt: -1 });
 
     res.json({
       success: true,
-      count: data.length,
-      scenarios: data,
+      count: scenarios.length,
+      scenarios: scenarios.map(s => ({
+        id: s._id,
+        title: s.title,
+        role: s.role,
+        difficulty: s.difficulty,
+        description: s.description,
+        created_at: s.createdAt,
+      })),
     });
   } catch (error) {
     console.error("Error in getAllScenarios:", error);
@@ -57,13 +57,10 @@ export const getScenarioById = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const { data: scenario, error } = await supabase
-      .from("scenarios")
-      .select("id, title, role, difficulty, description, created_at")
-      .eq("id", id)
-      .single();
+    const scenario = await Scenario.findById(id)
+      .select("_id title role difficulty description createdAt");
 
-    if (error || !scenario) {
+    if (!scenario) {
       return res.status(404).json({
         success: false,
         message: "Scenario not found",
@@ -72,7 +69,14 @@ export const getScenarioById = async (req, res) => {
 
     res.json({
       success: true,
-      scenario,
+      scenario: {
+        id: scenario._id,
+        title: scenario.title,
+        role: scenario.role,
+        difficulty: scenario.difficulty,
+        description: scenario.description,
+        created_at: scenario.createdAt,
+      },
     });
   } catch (error) {
     console.error("Error in getScenarioById:", error);

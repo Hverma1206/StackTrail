@@ -1,4 +1,6 @@
-import supabase from "../config/supabase.js";
+import Scenario from "../models/Scenario.js";
+import Step from "../models/Step.js";
+import Progress from "../models/Progress.js";
 
 /**
  * XP Evaluation Rules
@@ -14,88 +16,58 @@ class DecisionTreeService {
    */
   async startScenario(userId, scenarioId) {
     // Check if scenario exists
-    const { data: scenario, error: scenarioError } = await supabase
-      .from("scenarios")
-      .select("id, title")
-      .eq("id", scenarioId)
-      .single();
+    const scenario = await Scenario.findById(scenarioId);
 
-    if (scenarioError || !scenario) {
+    if (!scenario) {
       throw new Error("Scenario not found");
     }
 
     // Get root step
-    const { data: rootStep, error: stepError } = await supabase
-      .from("steps")
-      .select("id, context, options")
-      .eq("scenario_id", scenarioId)
-      .eq("is_root", true)
-      .single();
+    const rootStep = await Step.findOne({
+      scenario_id: scenarioId,
+      is_root: true,
+    });
 
-    if (stepError || !rootStep) {
+    if (!rootStep) {
       throw new Error("Root step not found for this scenario");
     }
 
     // Create or reset progress
-    const { data: existingProgress } = await supabase
-      .from("progress")
-      .select("id")
-      .eq("user_id", userId)
-      .eq("scenario_id", scenarioId)
-      .single();
+    const existingProgress = await Progress.findOne({
+      user_id: userId,
+      scenario_id: scenarioId,
+    });
 
     let progress;
 
     if (existingProgress) {
       // Reset existing progress
-      const { data, error } = await supabase
-        .from("progress")
-        .update({
-          current_step_id: rootStep.id,
-          score: 0,
-          decisions: [],
-          completed: false,
-          failed: false,
-          bad_decision_count: 0,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", existingProgress.id)
-        .select()
-        .single();
-
-      if (error) {
-        console.error("Reset progress error:", error);
-        throw new Error("Failed to reset progress");
-      }
-      progress = data;
+      existingProgress.current_step_id = rootStep._id.toString();
+      existingProgress.score = 0;
+      existingProgress.decisions = [];
+      existingProgress.completed = false;
+      existingProgress.failed = false;
+      existingProgress.bad_decision_count = 0;
+      await existingProgress.save();
+      progress = existingProgress;
     } else {
       // Create new progress
-      const { data, error } = await supabase
-        .from("progress")
-        .insert({
-          user_id: userId,
-          scenario_id: scenarioId,
-          current_step_id: rootStep.id,
-          score: 0,
-          decisions: [],
-          completed: false,
-          failed: false,
-          bad_decision_count: 0,
-        })
-        .select()
-        .single();
-
-      if (error) {
-        console.error("Create progress error:", error);
-        throw new Error("Failed to create progress");
-      }
-      progress = data;
+      progress = await Progress.create({
+        user_id: userId,
+        scenario_id: scenarioId,
+        current_step_id: rootStep._id.toString(),
+        score: 0,
+        decisions: [],
+        completed: false,
+        failed: false,
+        bad_decision_count: 0,
+      });
     }
 
     return {
       progress,
       step: {
-        id: rootStep.id,
+        id: rootStep._id.toString(),
         context: rootStep.context,
         options: rootStep.options,
       },
@@ -107,14 +79,12 @@ class DecisionTreeService {
    */
   async getStep(userId, scenarioId, stepId) {
     // Verify user has active progress for this scenario
-    const { data: progress, error: progressError } = await supabase
-      .from("progress")
-      .select("id, current_step_id, completed, failed")
-      .eq("user_id", userId)
-      .eq("scenario_id", scenarioId)
-      .single();
+    const progress = await Progress.findOne({
+      user_id: userId,
+      scenario_id: scenarioId,
+    });
 
-    if (progressError || !progress) {
+    if (!progress) {
       throw new Error("No active progress found. Start the scenario first.");
     }
 
@@ -128,20 +98,15 @@ class DecisionTreeService {
     }
 
     // Get step details
-    const { data: step, error: stepError } = await supabase
-      .from("steps")
-      .select("id, scenario_id, context, options")
-      .eq("id", stepId)
-      .eq("scenario_id", scenarioId)
-      .single();
+    const step = await Step.findById(stepId);
 
-    if (stepError || !step) {
+    if (!step || step.scenario_id.toString() !== scenarioId) {
       throw new Error("Step not found");
     }
 
     return {
       step: {
-        id: step.id,
+        id: step._id.toString(),
         context: step.context,
         options: step.options,
       },
@@ -157,14 +122,12 @@ class DecisionTreeService {
    */
   async submitAnswer(userId, scenarioId, stepId, optionId) {
     // Get current progress
-    const { data: progress, error: progressError } = await supabase
-      .from("progress")
-      .select("*")
-      .eq("user_id", userId)
-      .eq("scenario_id", scenarioId)
-      .single();
+    const progress = await Progress.findOne({
+      user_id: userId,
+      scenario_id: scenarioId,
+    });
 
-    if (progressError || !progress) {
+    if (!progress) {
       throw new Error("No active progress found");
     }
 
@@ -177,13 +140,9 @@ class DecisionTreeService {
     }
 
     // Get current step
-    const { data: currentStep, error: stepError } = await supabase
-      .from("steps")
-      .select("options")
-      .eq("id", stepId)
-      .single();
+    const currentStep = await Step.findById(stepId);
 
-    if (stepError || !currentStep) {
+    if (!currentStep) {
       throw new Error("Step not found");
     }
 
@@ -215,26 +174,17 @@ class DecisionTreeService {
 
     // Check if scenario should fail (3 bad decisions)
     if (newBadDecisionCount >= 3) {
-      const { data: updatedProgress, error: updateError } = await supabase
-        .from("progress")
-        .update({
-          score: newTotalXp,
-          bad_decision_count: newBadDecisionCount,
-          decisions: newDecisions,
-          failed: true,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", progress.id)
-        .select()
-        .single();
-
-      if (updateError) throw new Error("Failed to update progress");
+      progress.score = newTotalXp;
+      progress.bad_decision_count = newBadDecisionCount;
+      progress.decisions = newDecisions;
+      progress.failed = true;
+      await progress.save();
 
       return {
         isComplete: true,
         isFailed: true,
         reason: "Too many bad decisions",
-        summary: this.generateSummary(updatedProgress),
+        summary: this.generateSummary(progress),
       };
     }
 
@@ -242,62 +192,40 @@ class DecisionTreeService {
 
     // Check if scenario is complete (no next step)
     if (!nextStepId) {
-      const { data: updatedProgress, error: updateError } = await supabase
-        .from("progress")
-        .update({
-          score: newTotalXp,
-          bad_decision_count: newBadDecisionCount,
-          decisions: newDecisions,
-          completed: true,
-          current_step_id: null,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", progress.id)
-        .select()
-        .single();
-
-      if (updateError) throw new Error("Failed to update progress");
+      progress.score = newTotalXp;
+      progress.bad_decision_count = newBadDecisionCount;
+      progress.decisions = newDecisions;
+      progress.completed = true;
+      progress.current_step_id = null;
+      await progress.save();
 
       return {
         isComplete: true,
         isFailed: false,
-        summary: this.generateSummary(updatedProgress),
+        summary: this.generateSummary(progress),
       };
     }
 
     // Get next step
-    const { data: nextStep, error: nextStepError } = await supabase
-      .from("steps")
-      .select("id, context, options")
-      .eq("id", nextStepId)
-      .single();
+    const nextStep = await Step.findById(nextStepId);
 
-    if (nextStepError || !nextStep) {
+    if (!nextStep) {
       throw new Error("Next step not found");
     }
 
     // Update progress with next step
-    const { data: updatedProgress, error: updateError } = await supabase
-      .from("progress")
-      .update({
-        current_step_id: nextStepId,
-        score: newTotalXp,
-        bad_decision_count: newBadDecisionCount,
-        decisions: newDecisions,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", progress.id)
-      .select()
-      .single();
-
-    if (updateError) throw new Error("Failed to update progress");
+    progress.current_step_id = nextStepId;
+    progress.score = newTotalXp;
+    progress.bad_decision_count = newBadDecisionCount;
+    progress.decisions = newDecisions;
+    await progress.save();
 
     return {
       isComplete: false,
       xpGained: xpChange,
       decisionQuality: this.evaluateDecision(xpChange),
       nextStep: {
-        id: nextStep.id,
+        id: nextStep._id.toString(),
         context: nextStep.context,
         options: nextStep.options,
       },
@@ -357,29 +285,22 @@ class DecisionTreeService {
    * Get progress for AI analysis
    */
   async getProgressForAnalysis(userId, scenarioId) {
-    const { data: progress, error } = await supabase
-      .from("progress")
-      .select(
-        `
-        *,
-        scenarios (
-          title,
-          description,
-          role,
-          difficulty
-        )
-      `
-      )
-      .eq("user_id", userId)
-      .eq("scenario_id", scenarioId)
-      .single();
+    const progress = await Progress.findOne({
+      user_id: userId,
+      scenario_id: scenarioId,
+    }).populate("scenario_id");
 
-    if (error || !progress) {
+    if (!progress) {
       throw new Error("Progress not found");
     }
 
     return {
-      scenario: progress.scenarios,
+      scenario: {
+        title: progress.scenario_id.title,
+        description: progress.scenario_id.description,
+        role: progress.scenario_id.role,
+        difficulty: progress.scenario_id.difficulty,
+      },
       summary: this.generateSummary(progress),
     };
   }

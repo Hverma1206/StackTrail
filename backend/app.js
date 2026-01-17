@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 import express, { json } from "express";
 import cors from "cors";
 import helmet from "helmet";
+import connectDB from "./src/config/mongodb.js";
 import authRoutes from "./src/routes/auth.routes.js";
 import scenarioRoutes from "./src/routes/scenario.routes.js";
 import progressRoutes from "./src/routes/progress.routes.js";
@@ -10,6 +11,9 @@ import { sanitizeInput } from "./src/middleware/validation.middleware.js";
 dotenv.config();
 
 const app = express();
+
+// Connect to MongoDB
+connectDB();
 
 app.use(helmet()); 
 app.use(cors(
